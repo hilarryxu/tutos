@@ -1,0 +1,14 @@
+*.o
+*.d
+*.asm
+*.sym
+*.img
+.gdbinit
+tags
+\.tags
+
+/qemu.log
+/config.mk
+/zcc
+
+/build/

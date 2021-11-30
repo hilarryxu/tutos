@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ -z $MSYSTEM ]; then
+  rg --type c --files kernel | xargs clang-format -i
+else
+  rg --path-separator '//' --type c --files kernel | xargs clang-format -i
+fi
