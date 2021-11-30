@@ -1,5 +1,7 @@
 -include config.mk
 
+.DEFAULT_GOAL := all
+
 .PHONY: all
 all: build
 
@@ -39,9 +41,35 @@ $(C_OBJS): $(BUILDDIR)/$K/%.o : $K/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.phony: build
+.PHONY: build
 build: $(BUILDDIR)/$(KERNEL_IMG)
 
 $(BUILDDIR)/$(KERNEL_IMG): $(OBJS)
 	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $(BUILDDIR)/$(KERNEL_IMG) $(OBJS)
-	@echo 'Build kernel.img done'
+	$(OBJDUMP) -S $(BUILDDIR)/$(KERNEL_IMG) > $(BUILDDIR)/kernel.asm
+	@echo 'Build $(KERNEL_IMG) done'
+
+.PHONY: clean
+clean:
+	rm -rf $(BUILDDIR)
+
+# QEMU
+ifndef CPUS
+CPUS := 1
+endif
+BOOTLOADER = default
+
+QEMU ?= qemu-system-riscv64
+QEMUEXTRA =
+QEMUOPTS = \
+	-nographic \
+	-machine virt \
+	-m 128M \
+	-smp $(CPUS) \
+	-bios $(BOOTLOADER) \
+	-kernel $(BUILDDIR)/$(KERNEL_IMG) \
+	$(QEMUEXTRA)
+
+.PHONY: qemu
+qemu: $(BUILDDIR)/$(KERNEL_IMG)
+	$(QEMU) $(QEMUOPTS)
