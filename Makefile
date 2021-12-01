@@ -23,7 +23,7 @@ C_OBJS = $(addprefix $(BUILDDIR)/, $(addsuffix .o, $(basename $(C_SRCS))))
 AS_OBJS = $(addprefix $(BUILDDIR)/, $(addsuffix .o, $(basename $(AS_SRCS))))
 OBJS = $(C_OBJS) $(AS_OBJS)
 
-KERNEL_IMG = kernel.img
+KERNEL_IMG = $(BUILDDIR)/kernel.img
 
 CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb
 CFLAGS += -MD
@@ -42,16 +42,22 @@ $(C_OBJS): $(BUILDDIR)/$K/%.o : $K/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: build
-build: $(BUILDDIR)/$(KERNEL_IMG)
+build: $(KERNEL_IMG)
 
-$(BUILDDIR)/$(KERNEL_IMG): $(OBJS)
-	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $(BUILDDIR)/$(KERNEL_IMG) $(OBJS)
-	$(OBJDUMP) -S $(BUILDDIR)/$(KERNEL_IMG) > $(BUILDDIR)/kernel.asm
+$(KERNEL_IMG): $(OBJS)
+	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $(KERNEL_IMG) $(OBJS)
+	$(OBJDUMP) -S $(KERNEL_IMG) > $(BUILDDIR)/kernel.asm
+	$(OBJDUMP) -t $(KERNEL_IMG) | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' | awk '$$2 != "" && $$2 !~ /\./ && $$2 !~ /__/ {print $$1,$$2}' > $(BUILDDIR)/kernel.sym
 	@echo 'Build $(KERNEL_IMG) done'
 
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)
+
+.PHONY: bootstrap
+bootstrap:
+	cp zcc.tmpl zcc
+	cp config.mk.tmpl config.mk
 
 # QEMU
 ifndef CPUS
@@ -67,9 +73,9 @@ QEMUOPTS = \
 	-m 128M \
 	-smp $(CPUS) \
 	-bios $(BOOTLOADER) \
-	-kernel $(BUILDDIR)/$(KERNEL_IMG) \
+	-kernel $(KERNEL_IMG) \
 	$(QEMUEXTRA)
 
 .PHONY: qemu
-qemu: $(BUILDDIR)/$(KERNEL_IMG)
+qemu: $(KERNEL_IMG)
 	$(QEMU) $(QEMUOPTS)

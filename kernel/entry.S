@@ -15,12 +15,12 @@ _entry:
   la sp, boot_stack_top
   # 准备调用内核主函数 kmain
   tail kmain
-  # 内核返回后 CPU 在这里 spin
+  # 内核返回后 CPU 在这里 wfi 低功耗等待中断
   # 其实不会返回，所以上面用 tail 而不是 call 指令
-spin:
+1:
   # 用 wfi 指令避免空转消耗 CPU
   wfi
-  j spin
+  j 1b
 
 # FIXME: 需要 4K 页对齐不？
 .section .bss.stack

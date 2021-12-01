@@ -4,6 +4,7 @@
 void
 kmain(void)
 {
+  // 暂时啥事没做，在这里空转
   while (1) {
   }
 }
