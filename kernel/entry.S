@@ -14,9 +14,8 @@ _entry:
   # 设置 sp 栈指针寄存器为内核栈顶位置
   la sp, boot_stack_top
   # 准备调用内核主函数 kmain
-  tail kmain
+  call kmain
   # 内核返回后 CPU 在这里 wfi 低功耗等待中断
-  # 其实不会返回，所以上面用 tail 而不是 call 指令
 1:
   # 用 wfi 指令避免空转消耗 CPU
   wfi
