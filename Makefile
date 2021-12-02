@@ -25,6 +25,10 @@ OBJS = $(C_OBJS) $(AS_OBJS)
 
 KERNEL_IMG = $(BUILDDIR)/kernel.img
 
+HEADER_DEP = $(addsuffix .d, $(basename $(C_OBJS)))
+
+-include $(HEADER_DEP)
+
 CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
@@ -37,9 +41,15 @@ $(AS_OBJS): $(BUILDDIR)/$K/%.o : $K/%.S
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(C_OBJS): $(BUILDDIR)/$K/%.o : $K/%.c
+$(C_OBJS): $(BUILDDIR)/$K/%.o : $K/%.c $(BUILDDIR)/$K/%.d
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(HEADER_DEP): $(BUILDDIR)/$K/%.d : $K/%.c
+	@mkdir -p $(@D)
+	@set -e; rm -f $@; $(CC) -MM $< $(INCLUDEFLAGS) > $@.$$$$; \
+		sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+		rm -f $@.$$$$
 
 .PHONY: build
 build: $(KERNEL_IMG)
