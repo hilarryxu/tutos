@@ -40,7 +40,7 @@ pmm_initialize(void)
 {
   printf("[pmm] initialize\n");
 
-  // 将 [_kernel_end, PHYS_MEM_TOP) 整个区域链成 freelist
+  // 将 [page_aligned(_kernel_end), PHYS_MEM_TOP) 整个区域链成 freelist
   free_range((phys_addr_t)_kernel_end, PHYS_MEM_TOP);
 
   return 0;
@@ -70,9 +70,10 @@ pmm_alloc(void)
 void
 pmm_free(phys_addr_t pa)
 {
-  // 检查地址是否按页对齐，以及区间是否合法
+  // 检查地址是否按页对齐(pa & 0xFFF)，以及是否在合法区间内
   // [page_aligned(_kernel_end), PHYS_MEM_TOP)
-  if ((pa & 0xFFF) || (char *)pa < _kernel_end ||
+  if ((pa & 0xFFF) ||
+      (unsigned long)pa < PAGE_ROUND_UP((phys_addr_t)_kernel_end) ||
       (unsigned long)pa >= PHYS_MEM_TOP) {
     panic("Invalid pa in pmm_free");
   }
