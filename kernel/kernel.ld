@@ -13,6 +13,9 @@ SECTIONS
   /* 指定起始位置为 BASE_ADDRESS_ */
   . = BASE_ADDRESS_;
 
+  /* 记录内核起始位置 */
+  _kernel_start = .;
+
   /* 代码段按 4K 对齐 */
   .text : {
     *(.text.entry)
@@ -39,12 +42,18 @@ SECTIONS
   /* BSS段 */
   .bss : {
     . = ALIGN(16);
+    _bss_start = .;
     *(.bss.stack)
     . = ALIGN(16);
+    _bss_partial_start = .;
     *(.sbss .sbss.*)
     . = ALIGN(16);
     *(.bss .bss.*)
+    _bss_end = .;
   }
+
+  /* 记录内核结束位置 */
+  _kernel_end = .;
 
   /* 去掉一些不需要的段 */
   /DISCARD/ : {
