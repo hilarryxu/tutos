@@ -1,5 +1,4 @@
 #include "defs.h"
-#include "arch.h"
 #include "memlayout.h"
 
 // 空闲页框头部
@@ -28,8 +27,9 @@ free_range(phys_addr_t pa_start, phys_addr_t pa_end)
   char *p;
 
   p = (char *)PAGE_ROUND_UP(pa_start);  // 按页对齐一下起始地址
-  for (; p + PAGE_SIZE <= (char *)pa_end; p += PAGE_SIZE)
+  for (; p + PAGE_SIZE <= (char *)pa_end; p += PAGE_SIZE) {
     pmm_free((phys_addr_t)p);
+  }
 }
 
 //---------------------------------------------------------------------
@@ -40,6 +40,7 @@ pmm_initialize(void)
 {
   printf("[pmm] initialize\n");
 
+  // 将 [_kernel_end, PHYS_MEM_TOP) 整个区域链成 freelist
   free_range((phys_addr_t)_kernel_end, PHYS_MEM_TOP);
 
   return 0;
@@ -72,8 +73,9 @@ pmm_free(phys_addr_t pa)
   // 检查地址是否按页对齐，以及区间是否合法
   // [page_aligned(_kernel_end), PHYS_MEM_TOP)
   if ((pa & 0xFFF) || (char *)pa < _kernel_end ||
-      (unsigned long)pa >= PHYS_MEM_TOP)
-    panic("pmm_free");
+      (unsigned long)pa >= PHYS_MEM_TOP) {
+    panic("Invalid pa in pmm_free");
+  }
 
   // 插入空闲链表头部
   struct pmm_block *block = (struct pmm_block *)pa;
@@ -81,11 +83,13 @@ pmm_free(phys_addr_t pa)
   pmm_allocator.freelist = block;
 }
 
+// 简单调用下物理内存分配释放函数
 void
 pmm_test(void)
 {
   void *p = (void *)pmm_alloc();
   printf("p  = %p\n", p);
+  // 故意不释放
   // pmm_free(p);
 
   void *p2 = (void *)pmm_alloc();
