@@ -21,5 +21,8 @@ kmain(void)
   // 清零 BSS 段
   clear_bss();
 
-  printf("Hello, TUTOS!\n");
+  printf("\nHello, TUTOS!\n\n");
+
+  pmm_initialize();
+  pmm_test();
 }
