@@ -1,6 +1,9 @@
 #include "defs.h"
 #include "memlayout.h"
 
+// 无法分配物理内存的返回值
+#define NONE_PHYS_ADDR 0
+
 // 空闲页框头部
 struct pmm_block {
   struct pmm_block *next;
@@ -26,7 +29,7 @@ free_range(phys_addr_t pa_start, phys_addr_t pa_end)
 {
   char *p;
 
-  p = (char *)PAGE_ROUND_UP(pa_start);  // 按页对齐一下起始地址
+  p = (char *)PAGE_ROUND_UP(pa_start);  // 按页对齐起始地址
   for (; p + PAGE_SIZE <= (char *)pa_end; p += PAGE_SIZE) {
     pmm_free((phys_addr_t)p);
   }
@@ -43,7 +46,7 @@ pmm_initialize(void)
   // 将 [page_aligned(_kernel_end), PHYS_MEM_TOP) 整个区域链成 freelist
   free_range((phys_addr_t)_kernel_end, PHYS_MEM_TOP);
 
-  return 0;
+  return OKAY;
 }
 
 //---------------------------------------------------------------------
@@ -61,7 +64,7 @@ pmm_alloc(void)
     return (phys_addr_t)block;
   }
 
-  return 0;
+  return NONE_PHYS_ADDR;
 }
 
 //---------------------------------------------------------------------
