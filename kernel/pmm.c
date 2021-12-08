@@ -75,11 +75,9 @@ pmm_free(phys_addr_t pa)
 {
   // 检查地址是否按页对齐(pa & 0xFFF)，以及是否在合法区间内
   // [page_aligned(_kernel_end), PHYS_MEM_TOP)
-  if ((pa & 0xFFF) ||
-      (unsigned long)pa < PAGE_ROUND_UP((phys_addr_t)_kernel_end) ||
-      (unsigned long)pa >= PHYS_MEM_TOP) {
-    panic("Invalid pa in pmm_free");
-  }
+  BUG_ON((pa & 0xFFF) ||
+         (unsigned long)pa < PAGE_ROUND_UP((phys_addr_t)_kernel_end) ||
+         (unsigned long)pa >= PHYS_MEM_TOP);
 
   // 插入空闲链表头部
   struct pmm_block *block = (struct pmm_block *)pa;
@@ -102,4 +100,6 @@ pmm_test(void)
 
   void *p3 = (void *)pmm_alloc();
   printf("p3 = %p\n", p3);
+
+  BUG_ON(p2 != p3);
 }
