@@ -5,6 +5,7 @@
 - [x] :white_check_mark: [bootstrap](https://github.com/hilarryxu/tutos/tree/s1-bootstrap) 启动
 - [x] :white_check_mark: [helloworld](https://github.com/hilarryxu/tutos/tree/s1-helloworld) 输出“你好，世界”
 - [x] :white_check_mark: [pmm](https://github.com/hilarryxu/tutos/tree/s1-pmm) 物理内存管理
+- [x] :white_check_mark: [debug](https://github.com/hilarryxu/tutos/tree/s1-debug) 防御性编程
 - [ ] context-switch 执行流切换
 - [ ] cooperative 协作式多任务
 - [ ] trap 中断处理
