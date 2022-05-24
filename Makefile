@@ -15,7 +15,7 @@ AS ?= $(TOOLPREFIX)gcc
 LD ?= $(TOOLPREFIX)ld
 GDB ?= $(TOOLPREFIX)gdb
 OBJCOPY = $(TOOLPREFIX)objcopy
-OBJDUMP = $(TOOLPREFIX)objdump
+OBJDUMP ?= $(TOOLPREFIX)objdump
 
 C_SRCS = $(wildcard $K/*.c)
 AS_SRCS = $(wildcard $K/*.S)
@@ -54,8 +54,10 @@ build: $(KERNEL_IMG)
 
 $(KERNEL_IMG): $(OBJS)
 	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $(KERNEL_IMG) $(OBJS)
-	# $(OBJDUMP) -S $(KERNEL_IMG) > $(BUILDDIR)/kernel.asm
-	# $(OBJDUMP) -t $(KERNEL_IMG) | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' | awk '$$2 != "" && $$2 !~ /\./ && $$2 !~ /__/ {print $$1,$$2}' > $(BUILDDIR)/kernel.sym
+	@if which $(OBJDUMP) >/dev/null 2>&1; then \
+		$(OBJDUMP) -S $(KERNEL_IMG) > $(BUILDDIR)/kernel.asm; \
+		$(OBJDUMP) -t $(KERNEL_IMG) | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' | awk '$$2 != "" && $$2 !~ /\./ && $$2 !~ /__/ {print $$1,$$2}' > $(BUILDDIR)/kernel.sym; \
+	fi
 	@echo 'Build $(KERNEL_IMG) done'
 
 .PHONY: clean
